@@ -8,16 +8,27 @@
 import random
 from PIL import Image, ImageDraw
 import colorsys
-image = Image.open("image.png")
+image = Image.open("image1.png")
 width = image.size[0]
 height = image.size[1]
+from tkinter import *
+from PIL import Image, ImageTk
+import time
+root = Tk()
+canvas = Canvas(root, width=width, height=height)
+canvas.pack()
 pix = image.load()
 x = width - 2
 y = height - 2
 ex = 10
 ey = 10
 rot = 270
+r_scale = 100
 draw = ImageDraw.Draw(image)
+pilImage = Image.open("image1.png")
+image1 = ImageTk.PhotoImage(pilImage)
+canvas.create_image(0, 0, image=image1, anchor=NW)
+root.update()
 for i in range(width):
     for j in range(height):
         a = pix[i, j][0]
@@ -25,45 +36,66 @@ for i in range(width):
         c = pix[i, j][2]
         draw.point((i, j), (a, b, c))
 i = 0
+def dec_to_base(N, base):
+    if not hasattr(dec_to_base, 'table'):
+        dec_to_base.table = '0123456789ABCDEF'
+    x, y = divmod(N, base)
+    return dec_to_base(x, base) + dec_to_base.table[y] if x else dec_to_base.table[y]
+def colour(r,g,b):
+    r = dec_to_base(r, 16)
+    g = dec_to_base(g, 16)
+    b = dec_to_base(b, 16)
+    if len(r)==1:
+        r = "0"+r
+    if len(g)==1:
+        g = "0"+g
+    if len(b)==1:
+        b = "0"+b
+    ans = "#" + r + g + b
+    return ans
 while x > ex or y > ey:
-    i = i + 1
+    #
+    i = i + 0.1
     if i > 360:
         i = 0
     c = colorsys.hsv_to_rgb(i / 360, 1, 1)
     r, g, b = round(c[0] * 255), round(c[1] * 255), round(c[2] * 255)
-    draw.point((x, y),(r,g,b))
+    draw.point((x, y), (r, g, b))
+    col = colour(r,g,b)
+    canvas.create_rectangle(x, y, x, y, fill=col,outline=col)
+    root.update()
     if rot == 0:
-        if pix[x + 1, y][0] > 200:
+        if pix[x + 1, y][0] > r_scale:
             rot = 90
         else:
-            if pix[x, y - 1][0] < 200:
+            if pix[x, y - 1][0] < r_scale:
                 rot = 90
                 y = y - 1
             else:
                 x = x + 1
     elif rot == 90:
-        if pix[x, y - 1][0] > 200:
+        if pix[x, y - 1][0] > r_scale:
             rot = 180
         else:
-            if pix[x - 1, y][0] < 200:
+            if pix[x - 1, y][0] < r_scale:
                 rot = 180
                 x = x -1
             else:
                 y = y - 1
     elif rot == 180:
-        if pix[x - 1, y][0] > 200:
+        if pix[x - 1, y][0] > r_scale:
             rot = 270
         else:
-            if pix[x, y + 1][0] < 200:
+            if pix[x, y + 1][0] < r_scale:
                 rot = 270
                 y = y + 1
             else:
                 x = x - 1
     elif rot == 270:
-        if pix[x, y + 1][0] > 200:
+        if pix[x, y + 1][0] > r_scale:
             rot = 0
         else:
-            if pix[x + 1, y][0] < 200:
+            if pix[x + 1, y][0] < r_scale:
                 rot = 0
                 x = x + 1
             else:
